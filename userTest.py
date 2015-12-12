@@ -14,27 +14,9 @@ import features2P
 
 import helperMethods as helper
 
-#weight_vector_3_piece = {'black_king_closer_to_winning_square': -1.400000000000001, 'black_opposition': -1.9200000000000015, 'cant catch pawn': 1.0000000000000007, 'can catch pawn': -0.27, 'white_king_closer': 1.0700000000000007, 'white_king_closer_to_winning_square': -0.22000000000000008, 'black_can_capture': -0.38000000000000017, 'white_king_blocked_down': 0.04000000000000009, 'white_king_blocked_side': -0.5200000000000002, 'white king ahead': 0.42000000000000015, 'black_king_wrong_side': 1.5400000000000011, 'white_king_blocked': -0.6000000000000003, 'white_king_wrong_side': -1.570000000000001, 'black_king_closer': -1.340000000000001, 'h_pawn': -2.6499999999999875}
+#weight vectors and feature extractors
 weight_vector_3_piece = {'black_king_closer_to_winning_square': -1.310000000000001, 'black_opposition': -0.22000000000000006, 'white_opposition': -1.490000000000001, 'cant catch pawn': 1.0000000000000007, 'can catch pawn': -0.3700000000000001, 'white_king_closer': 1.0000000000000007, 'white_king_closer_to_winning_square': -0.3200000000000002, 'black_can_capture': -0.38000000000000017, 'white_king_blocked_down': 0.03000000000000009, 'white winning setup': -0.02, 'white_king_blocked_side': -0.5200000000000002, 'white king ahead': 0.44000000000000017, 'black_king_wrong_side': 1.6300000000000012, 'white_king_blocked': -0.6100000000000003, 'white_king_wrong_side': -1.520000000000001, 'black_king_closer': -1.370000000000001, 'h_pawn': -2.6499999999999875}
-weight_vector_4_piece = { \
-	'simple adjacent draw': -0.833, \
-	'calculate winning': 1.44, \
-	'calculate drawing': -0.93, \
-	'wrongside + black can catch': -1.12, \
-	'black promotes faster': -0.68, \
-	'pawn remove draw': -1.5, \
-	'king close to defensive square': -0.88, \
-	'black king too far to defend': 0.93, \
-	'black king too close to defend': -0.91, \
-	'black king much closer': -1.24, \
-	'white king much closer': 1.09, \
-	'black king same rank or above': -0.49, \
-	'black king too far': 0.43, \
-	'black king close + no high p': -0.14, \
-	'black king close + p': -0.08, \
-	'white king close to p': 0.24, \
-}
-weight_vector_5_piece = {'black_king_closer_to_winning_square': -1.400000000000001, 'black_opposition': -1.9200000000000015, 'cant catch pawn': 1.0000000000000007, 'can catch pawn': -0.27, 'white_king_closer': 1.0700000000000007, 'white_king_closer_to_winning_square': -0.22000000000000008, 'black_can_capture': -0.38000000000000017, 'white_king_blocked_down': 0.04000000000000009, 'white_king_blocked_side': -0.5200000000000002, 'white king ahead': 0.42000000000000015, 'black_king_wrong_side': 1.5400000000000011, 'white_king_blocked': -0.6000000000000003, 'white_king_wrong_side': -1.570000000000001, 'black_king_closer': -1.340000000000001, 'h_pawn': -2.6499999999999875}
+weight_vector_4_piece = {'simple adjacent draw': -0.833, 'calculate winning': 1.44, 'calculate drawing': -0.93000000001, 'wrongside + black can catch': -1.12000000004, 'black promotes faster': -0.6800000000001, 'pawn remove draw': -1.500000009, 'king close to defensive square': -0.880000000002, 'black king too far to defend': 0.9300000004, 'black king too close to defend': -0.910000000000001, 'black king much closer': -1.240000002, 'white king much closer': 1.09000000001, 'black king same rank or above': -0.4900001, 'black king too far': 0.4300001, 'black king close + no high p': -0.14000000001, 'black king close + p': -0.0800000000000002, 'white king close to p': 0.240000000000001}
 
 def featureExtractor_3(x):
     """
@@ -45,12 +27,10 @@ def featureExtractor_3(x):
     features = Counter()
 
     features.update(canCatchPawn(x))
-    if (features['cant catch pawn'] == 1):
+    if (features['cant catch pawn'] == 1): #Veto
         return features
 
     features.update(canBeCaptured(x))
-    # if (features['black_can_capture'] == 1):
-    #     return {'black_can_capture':1}
     features.update(isWhiteKingAhead(x))
     features.update(isOpposition(x))
     features.update(move_distances(x))
@@ -61,17 +41,19 @@ def featureExtractor_3(x):
 
 def featureExtractor_4(x):
     val = features2P.getFeatures2P(x)
-    print val
     return val
 
 
+#Basic I/O
 def userInput():
 	print ""
 	print "This is an endgame solver designed to solve 3,4 and 5 piece chess"
-	print "Currently it can solve the following board combinations: " #fill 
-	print "Please enter the board in algebraic notation, enter . when you are done"
+	print "Currently it can solve the following board combinations: KPvp and KPvskp"  
+	print "Please enter the board in algebraic notation, enter a . when you are done"
 	print "Uppercase letters define white's pieces, while lowecase define black's pieces"
-	print "If there are 2 pieces on the same row, please enter them in ascending order (ka1 before Pa3)"
+	print "Example entry: Ka3, kb7, Pb4, pc3, ."
+	print "NOTE: 3 piece only accepts the pawn being white so it must include K,P and k to work"
+	print "4 piece accepts a white and a black pawn so it must include K,P,k and p to work"
 	print ""
 	pieces = []
 	while True:
@@ -83,7 +65,7 @@ def userInput():
 
 	FEN = processInput(pieces)
 
-	turn = raw_input('Whose move is it (b or w): ')
+	turn = raw_input('Whose move is it (w or b): ')
 
 	board = chess.Board(FEN + " " + turn + " - - 0 1")
 	if turn == "w":
@@ -107,7 +89,13 @@ def userInput():
 		predictedOutput = output[1]
 
 	elif len(pieces) == 4:
+
+		print "Real Board:"
 		output1 = predictOutput(board, syzygy, len(pieces))
+
+		print""
+		
+		print "Mirrored Board:"
 		output2 = predictOutput(mirrorBoard, syzygy, len(pieces))
 
 		actualOutput = output1[0]
@@ -129,14 +117,8 @@ def userInput():
 		else:
 			print "The predicted output according our algorithm is: WIN"
 	print ""
-#problem
-#Enter new piece: Ka2
-# Enter new piece: ka6
-# Enter new piece: pd2
-# Enter new piece: .
-# Whose move is it (b or w): w
-# 3
 
+#gives output from tablebases and our algorithm as a tuple
 def predictOutput(board, syzygy, numPieces):
 	features = {}
 	if numPieces == 3:
@@ -166,8 +148,6 @@ def predictOutput(board, syzygy, numPieces):
 
 	for val in features:
 	    ourVal += weights[val] * features[val]
-
-	print ourVal
 
 	if (ourVal <= 0):
 	    ourVal = -1
@@ -204,9 +184,9 @@ def predictOutputOnly(board, numPieces):
 	elif (ourVal > 0):
 	    ourVal = 1
 
-	#print "exited"
 	return ourVal
 
+#converts the input into actual row columns and a board which can be processed by processBoard
 
 def processInput(pieces):
 	FEN = ""
@@ -238,6 +218,8 @@ def processInput(pieces):
 
 	FEN = processBoard(board)
 	return FEN
+
+#remove a piece from an FEN
 
 def removePiece(FEN, piece):
 	board = [[] for i in range(8)]
@@ -276,6 +258,8 @@ def is_number(s):
     except ValueError:
         return False
 
+
+#processes a board into an FEN, which can be use by PyChess
 def processBoard(board):
 	FEN = ""
 	newBoard = []
@@ -310,6 +294,7 @@ def processBoard(board):
 			FEN += "/"
 	return FEN
 
+#get expected Val of an FEN from tablebases
 def getVal(FEN):
 	syzygy = chess.syzygy.Tablebases()
 	num = 0
